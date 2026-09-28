@@ -162,13 +162,6 @@ python infer.py --input test/ --output outputs/visual/
 python infer.py --input path/to/image.png --output results/ --show
 ```
 
-### 5. Train on GPU (Colab/Kaggle)
-
-Upload the included `Drone_Segmentation_Training.ipynb` notebook:
-- **Kaggle:** Add "Semantic Drone Dataset" → GPU T4 → Run All (~15 min)
-- **Colab:** Runtime → GPU T4 → Run All
-
----
 
 ## 📁 Project Structure
 
