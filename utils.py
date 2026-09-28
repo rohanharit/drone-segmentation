@@ -1,5 +1,3 @@
-"""Utility functions: metrics, visualization, and helpers."""
-
 import os
 import csv
 import numpy as np
@@ -10,18 +8,7 @@ import matplotlib.pyplot as plt
 import config
 
 
-# ─── Metrics ─────────────────────────────────────────────────
-
 def dice_score(pred, target, num_classes=None):
-    """Compute mean Dice coefficient across all classes.
-
-    Args:
-        pred: model output logits (B, C, H, W)
-        target: ground truth class indices (B, H, W)
-
-    Returns:
-        Mean Dice score (float)
-    """
     num_classes = num_classes or config.NUM_CLASSES
     pred = torch.argmax(pred, dim=1)
     dice = 0.0
@@ -37,11 +24,6 @@ def dice_score(pred, target, num_classes=None):
 
 
 def per_class_iou(pred, target, num_classes=None):
-    """Compute IoU for each class.
-
-    Returns:
-        dict mapping class_name → IoU value
-    """
     num_classes = num_classes or config.NUM_CLASSES
     pred = torch.argmax(pred, dim=1)
     ious = {}
@@ -57,10 +39,7 @@ def per_class_iou(pred, target, num_classes=None):
     return ious
 
 
-# ─── Visualization ───────────────────────────────────────────
-
 def create_color_mask(pred_mask, color_map=None):
-    """Convert a class-index mask to an RGB color image."""
     color_map = color_map or config.COLOR_MAP
     h, w = pred_mask.shape
     color_img = np.zeros((h, w, 3), dtype=np.uint8)
@@ -71,21 +50,6 @@ def create_color_mask(pred_mask, color_map=None):
 
 def visualize_prediction(image_path, model, transform, device=None,
                          save_path=None, show=False):
-    """Run inference on a single image and produce a side-by-side visualization.
-
-    Creates: [Original Image | Color Mask | Blended Overlay]
-
-    Args:
-        image_path: path to input image
-        model: loaded UNet model in eval mode
-        transform: albumentations validation transform
-        device: torch device
-        save_path: if set, saves the visualization to this path
-        show: if True, displays the result with cv2.imshow
-
-    Returns:
-        combined (H, W*3, 3) RGB numpy array
-    """
     device = device or config.DEVICE
     img = cv2.imread(image_path)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -97,7 +61,6 @@ def visualize_prediction(image_path, model, transform, device=None,
         output = model(input_tensor)
         pred = torch.argmax(output, dim=1).squeeze().cpu().numpy()
 
-    # Resize prediction back to original size
     pred = cv2.resize(
         pred.astype(np.uint8),
         (img.shape[1], img.shape[0]),
@@ -120,25 +83,15 @@ def visualize_prediction(image_path, model, transform, device=None,
     return combined
 
 
-# ─── Training Logging ────────────────────────────────────────
-
 def save_training_log(log_path, history):
-    """Save training history to CSV.
-
-    Args:
-        log_path: output CSV file path
-        history: list of dicts with keys [epoch, train_loss, val_loss, val_dice, lr]
-    """
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     with open(log_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=history[0].keys())
         writer.writeheader()
         writer.writerows(history)
-    print(f"Training log saved to {log_path}")
 
 
 def plot_training_curves(log_path, save_path=None):
-    """Plot loss and Dice curves from a training log CSV."""
     epochs, train_losses, val_losses, val_dices = [], [], [], []
 
     with open(log_path, "r") as f:
@@ -151,7 +104,6 @@ def plot_training_curves(log_path, save_path=None):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Loss curve
     ax1.plot(epochs, train_losses, label="Train Loss", marker="o", markersize=3)
     ax1.plot(epochs, val_losses, label="Val Loss", marker="o", markersize=3)
     ax1.set_xlabel("Epoch")
@@ -160,7 +112,6 @@ def plot_training_curves(log_path, save_path=None):
     ax1.legend()
     ax1.grid(True, alpha=0.3)
 
-    # Dice curve
     ax2.plot(epochs, val_dices, label="Val Dice", marker="o", markersize=3, color="green")
     ax2.set_xlabel("Epoch")
     ax2.set_ylabel("Dice Score")
@@ -173,6 +124,5 @@ def plot_training_curves(log_path, save_path=None):
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, dpi=150, bbox_inches="tight")
-        print(f"Training curves saved to {save_path}")
 
     plt.close(fig)

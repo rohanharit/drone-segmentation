@@ -1,5 +1,3 @@
-"""Dataset loading, class remapping, and augmentation transforms."""
-
 import numpy as np
 import cv2
 from glob import glob
@@ -15,7 +13,6 @@ import config
 
 
 def remap_mask(mask):
-    """Remap original 24-class mask to 5 grouped classes."""
     new_mask = np.zeros_like(mask)
     for new_class, old_classes in config.GROUPED_CLASSES.items():
         for c in old_classes:
@@ -24,12 +21,6 @@ def remap_mask(mask):
 
 
 class SegmentationDataset(Dataset):
-    """PyTorch Dataset for drone semantic segmentation.
-
-    Reads an image and its corresponding grayscale mask,
-    remaps the mask from 24 → 5 classes, and applies augmentations.
-    """
-
     def __init__(self, image_paths, mask_paths, transform=None):
         self.image_paths = image_paths
         self.mask_paths = mask_paths
@@ -54,7 +45,6 @@ class SegmentationDataset(Dataset):
 
 
 def get_train_transform(image_size=None):
-    """Training augmentations: resize, flips, rotation, brightness, normalize."""
     size = image_size or config.IMAGE_SIZE
     return A.Compose([
         A.Resize(size, size),
@@ -68,7 +58,6 @@ def get_train_transform(image_size=None):
 
 
 def get_val_transform(image_size=None):
-    """Validation transform: resize and normalize only (no randomness)."""
     size = image_size or config.IMAGE_SIZE
     return A.Compose([
         A.Resize(size, size),
@@ -79,11 +68,6 @@ def get_val_transform(image_size=None):
 
 def get_dataloaders(image_dir=None, mask_dir=None, batch_size=None,
                     num_workers=None, test_size=None):
-    """Build train and validation DataLoaders from the dataset.
-
-    Returns:
-        train_loader, val_loader
-    """
     image_dir = image_dir or config.IMAGE_DIR
     mask_dir = mask_dir or config.MASK_DIR
     batch_size = batch_size or config.BATCH_SIZE
@@ -97,8 +81,6 @@ def get_dataloaders(image_dir=None, mask_dir=None, batch_size=None,
         raise FileNotFoundError(f"No images found in {image_dir}")
     if len(mask_paths) == 0:
         raise FileNotFoundError(f"No masks found in {mask_dir}")
-
-    print(f"Found {len(image_paths)} images and {len(mask_paths)} masks")
 
     train_imgs, val_imgs, train_masks, val_masks = train_test_split(
         image_paths, mask_paths,
@@ -118,5 +100,4 @@ def get_dataloaders(image_dir=None, mask_dir=None, batch_size=None,
         shuffle=False, num_workers=num_workers,
     )
 
-    print(f"Train: {len(train_dataset)} | Val: {len(val_dataset)}")
     return train_loader, val_loader
