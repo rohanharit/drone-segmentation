@@ -30,7 +30,6 @@ def load_model(weights_path, device):
 def get_image_paths(input_path):
     if os.path.isfile(input_path):
         return [input_path]
-
     if os.path.isdir(input_path):
         paths = sorted(
             glob(f"{input_path}/*.png") +
