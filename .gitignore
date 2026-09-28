@@ -1,0 +1,26 @@
+# Model weights
+*.pth
+*.pt
+weights/
+
+# Dataset (too large for git)
+archive/
+data/
+
+# Outputs
+outputs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
